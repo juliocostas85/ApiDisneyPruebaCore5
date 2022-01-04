@@ -8,26 +8,31 @@ using Microsoft.EntityFrameworkCore;
 using ApiDisneyPruebaCore5.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using ApiDisneyPruebaCore5.DTOs;
+using AutoMapper;
+using System.Reflection;
 
 namespace ApiDisneyPruebaCore5.Controllers
 {
     [Produces("application/json")]
     [Route("movies")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PeliculasSeriesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper mapper;
 
-        public PeliculasSeriesController(ApplicationDbContext context)
+        public PeliculasSeriesController(ApplicationDbContext context, IMapper mapper)
         {
-            _context = context;
+            this._context = context;
+            this.mapper = mapper;
         }
 
        
         [HttpGet]
    
-        public async Task<IActionResult> Get([FromQuery]Filtros filtros)
+        public async Task<ActionResult<IEnumerable<PeliculasSeriesGet>>> Get([FromQuery]Filtros filtros)
         {
 
             List<PeliculaSerie> lst = new List<PeliculaSerie>();
@@ -62,33 +67,36 @@ namespace ApiDisneyPruebaCore5.Controllers
                 lst = await _context.PeliculasSeries.ToListAsync();
             }
 
-            var lstResult =  (from d in lst
-                                   select new
-                                   {
-                                       Imagen = d.Imagen,
-                                       Titulo = d.Titulo,
-                                       FechaCreacion = d.FechaCreacion
-                                   });
+            var lstResult = (from d in lst
+                             select new PeliculasSeriesGet
+                             {
+                                 Imagen = d.Imagen,
+                                 Titulo = d.Titulo,
+                                 FechaCreacion = d.FechaCreacion
+                             });
 
-            return Ok(lstResult);
+
+            return Ok(lstResult.ToList());
           
         }
 
 
 
-        
         [HttpGet("{idpeliculaserie:int}", Name = "peliculaCreada")]
-        public async Task<ActionResult<PeliculaSerie>> Detalle(int idpeliculaserie)
+        public async Task<ActionResult<PeliculasSeriesDTO>> Detalle(int idpeliculaserie)
         {
-            PeliculaSerie peliculaseries = await _context.PeliculasSeries.Include(x => x.Personajes).FirstOrDefaultAsync(x => x.PeliculaSerieId == idpeliculaserie);
+            PeliculaSerie peliculaseries = await _context.PeliculasSeries.Include(x => x.PeliculasSeriesPersonajes).ThenInclude(pe=>pe.Personaje).FirstOrDefaultAsync(x => x.PeliculaSerieId == idpeliculaserie);
 
             if (peliculaseries == null)
             {
                 return NotFound();
             }
 
-            return peliculaseries;
+            
+            return mapper.Map<PeliculasSeriesDTO>(peliculaseries); 
         }
+
+
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> PutPeliculaSerie(int id, PeliculaSerie peliculaSerie)
@@ -127,22 +135,24 @@ namespace ApiDisneyPruebaCore5.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<PeliculaSerie>> PostPeliculaSerie(PeliculaSerie peliculaSerie)
+        public async Task<ActionResult> PostPeliculaSerie(PeliculasSeriesCreacionDTO peliculaSerie)
         {
 
             var existe = await _context.Generos.AnyAsync(x => x.GeneroId == peliculaSerie.GeneroId);
             if (!existe)
             {
-                return BadRequest("No existe el genero.");
+                return BadRequest($"No existe el genero con ID {peliculaSerie.GeneroId}.");
             }
 
 
             if (ModelState.IsValid)
             {
-                _context.PeliculasSeries.Add(peliculaSerie);
+                var pelicula = mapper.Map<PeliculaSerie>(peliculaSerie);
+                _context.PeliculasSeries.Add(pelicula);
                 await _context.SaveChangesAsync();
 
-                return new CreatedAtRouteResult("peliculaCreada", new { idpeliculaserie = peliculaSerie.PeliculaSerieId }, peliculaSerie);
+                //return new CreatedAtRouteResult("peliculaCreada", new { idpeliculaserie = peliculaSerie.PeliculaSerieId }, peliculaSerie);
+                return Ok();
             }
             else
             {

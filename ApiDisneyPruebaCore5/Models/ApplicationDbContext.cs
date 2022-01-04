@@ -23,9 +23,19 @@ namespace ApiDisneyPruebaCore5.Models
             // ...
         }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<PeliculaSeriePersonaje>()
+                 .HasKey(pp => new { pp.PeliculaSerieId, pp.PersonajeId });
+        }
+
 
         public DbSet<Genero> Generos { get; set; }
         public DbSet<PeliculaSerie> PeliculasSeries { get; set; }
         public DbSet<ApiDisneyPruebaCore5.Models.Personaje> Personaje { get; set; }
+
+        public DbSet<PeliculaSeriePersonaje> PeliculasSeriesPersonajes { get; set; }
     }
 }

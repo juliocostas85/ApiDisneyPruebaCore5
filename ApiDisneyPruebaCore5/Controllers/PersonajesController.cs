@@ -8,20 +8,24 @@ using Microsoft.EntityFrameworkCore;
 using ApiDisneyPruebaCore5.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using AutoMapper;
+using ApiDisneyPruebaCore5.DTOs;
 
 namespace ApiDisneyPruebaCore5.Controllers
 {
     [Produces("application/json")]
     [Route("characters")]
     [ApiController]
-   // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PersonajesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper mapper;
 
-        public PersonajesController(ApplicationDbContext context)
+        public PersonajesController(ApplicationDbContext context, IMapper mapper)
         {
-            _context = context;
+            this._context = context;
+            this.mapper = mapper;
         }
 
         // GET: api/Personajes
@@ -29,7 +33,7 @@ namespace ApiDisneyPruebaCore5.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> BuscarPersonaje([FromQuery]Filtros filtros)
+        public async Task<ActionResult<List<PersonajesGet>>> BuscarPersonaje([FromQuery]Filtros filtros)
         {
 
             List<Personaje> lst = new List<Personaje>();
@@ -65,7 +69,7 @@ namespace ApiDisneyPruebaCore5.Controllers
 
 
             var lstResult =  (from d in lst
-                             select new
+                             select new PersonajesGet
                              {
                                  Imagen = d.Imagen,
                                  Nombre = d.Nombre
@@ -80,16 +84,17 @@ namespace ApiDisneyPruebaCore5.Controllers
        
         
         [HttpGet("{idpersonaje:int}", Name = "personajeCreado")]
-        public async Task<ActionResult<Personaje>> Detalle(int idpersonaje)
+        public async Task<ActionResult<PersonajeDTO>> Detalle(int idpersonaje)
         {
-            Personaje personaje = await _context.Personaje.Include(x => x.PeliculasSeries).FirstOrDefaultAsync(x => x.PersonajeId == idpersonaje);
+            Personaje personaje = await _context.Personaje.Include(x => x.PeliculasSeriesPersonajes).ThenInclude(p=>p.PeliculaSerie).FirstOrDefaultAsync(x => x.PersonajeId == idpersonaje);
 
             if (personaje == null)
             {
                 return NotFound();
             }
 
-            return personaje;
+
+            return mapper.Map<PersonajeDTO>(personaje);
         }
 
 
@@ -134,13 +139,16 @@ namespace ApiDisneyPruebaCore5.Controllers
         // POST: api/Personajes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Personaje>> PostPersonaje(Personaje personaje)
+        public async Task<ActionResult> PostPersonaje(PersonajeCreacionDTO personaje)
         {
             if (ModelState.IsValid)
             {
-                _context.Personaje.Add(personaje);
+                var personajeCreacion = mapper.Map<Personaje>(personaje);
+
+                _context.Personaje.Add(personajeCreacion);
                 await _context.SaveChangesAsync();
-                return new CreatedAtRouteResult("personajeCreado", new { idpersonaje = personaje.PersonajeId }, personaje);
+                // return new CreatedAtRouteResult("personajeCreado", new { idpersonaje = personaje.PersonajeId }, personaje);
+                return Ok();
             }
             else
             {

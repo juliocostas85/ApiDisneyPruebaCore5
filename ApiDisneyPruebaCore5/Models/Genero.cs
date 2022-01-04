@@ -14,6 +14,7 @@ namespace ApiDisneyPruebaCore5.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int GeneroId { get; set; }
 
+        [StringLength(maximumLength:120)]
         public string Nombre { get; set; }
 
         [Column(TypeName = "image")]

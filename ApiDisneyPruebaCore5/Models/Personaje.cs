@@ -11,10 +11,10 @@ namespace ApiDisneyPruebaCore5.Models
     public class Personaje
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int PersonajeId { get; set; } 
+        public int PersonajeId { get; set; }
 
-
-
+        [Required]
+        [StringLength(maximumLength: 250)]
         public string Nombre { get; set; }
 
         [Column(TypeName = "image")]
@@ -34,8 +34,8 @@ namespace ApiDisneyPruebaCore5.Models
 
         public string Historia { get; set; }
 
-       // [JsonIgnore]
-        public List<PeliculaSerie> PeliculasSeries { get; set; }
+        // [JsonIgnore]
+        public List<PeliculaSeriePersonaje> PeliculasSeriesPersonajes { get; set; }
 
     }
 }

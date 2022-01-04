@@ -4,14 +4,16 @@ using ApiDisneyPruebaCore5.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ApiDisneyPruebaCore5.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220103150803_MuchosaMuchos")]
+    partial class MuchosaMuchos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,6 +105,21 @@ namespace ApiDisneyPruebaCore5.Migrations
                     b.ToTable("Generos");
                 });
 
+            modelBuilder.Entity("ApiDisneyPruebaCore5.Models.PeliculSeriePersonaje", b =>
+                {
+                    b.Property<int>("PeliculaSerieId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PersonajeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PeliculaSerieId", "PersonajeId");
+
+                    b.HasIndex("PersonajeId");
+
+                    b.ToTable("PeliculasSeriesPersonajes");
+                });
+
             modelBuilder.Entity("ApiDisneyPruebaCore5.Models.PeliculaSerie", b =>
                 {
                     b.Property<int>("PeliculaSerieId")
@@ -129,21 +146,6 @@ namespace ApiDisneyPruebaCore5.Migrations
                     b.HasIndex("GeneroId");
 
                     b.ToTable("PeliculasSeries");
-                });
-
-            modelBuilder.Entity("ApiDisneyPruebaCore5.Models.PeliculaSeriePersonaje", b =>
-                {
-                    b.Property<int>("PeliculaSerieId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PersonajeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PeliculaSerieId", "PersonajeId");
-
-                    b.HasIndex("PersonajeId");
-
-                    b.ToTable("PeliculasSeriesPersonajes");
                 });
 
             modelBuilder.Entity("ApiDisneyPruebaCore5.Models.Personaje", b =>
@@ -306,6 +308,40 @@ namespace ApiDisneyPruebaCore5.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("PeliculaSeriePersonaje", b =>
+                {
+                    b.Property<int>("PeliculasSeriesPeliculaSerieId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PersonajesPersonajeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PeliculasSeriesPeliculaSerieId", "PersonajesPersonajeId");
+
+                    b.HasIndex("PersonajesPersonajeId");
+
+                    b.ToTable("PeliculaSeriePersonaje");
+                });
+
+            modelBuilder.Entity("ApiDisneyPruebaCore5.Models.PeliculSeriePersonaje", b =>
+                {
+                    b.HasOne("ApiDisneyPruebaCore5.Models.PeliculaSerie", "PeliculaSerie")
+                        .WithMany()
+                        .HasForeignKey("PeliculaSerieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApiDisneyPruebaCore5.Models.Personaje", "Personaje")
+                        .WithMany()
+                        .HasForeignKey("PersonajeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PeliculaSerie");
+
+                    b.Navigation("Personaje");
+                });
+
             modelBuilder.Entity("ApiDisneyPruebaCore5.Models.PeliculaSerie", b =>
                 {
                     b.HasOne("ApiDisneyPruebaCore5.Models.Genero", "FK_Genero")
@@ -315,25 +351,6 @@ namespace ApiDisneyPruebaCore5.Migrations
                         .IsRequired();
 
                     b.Navigation("FK_Genero");
-                });
-
-            modelBuilder.Entity("ApiDisneyPruebaCore5.Models.PeliculaSeriePersonaje", b =>
-                {
-                    b.HasOne("ApiDisneyPruebaCore5.Models.PeliculaSerie", "PeliculaSerie")
-                        .WithMany("PeliculasSeriesPersonajes")
-                        .HasForeignKey("PeliculaSerieId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ApiDisneyPruebaCore5.Models.Personaje", "Personaje")
-                        .WithMany("PeliculasSeriesPersonajes")
-                        .HasForeignKey("PersonajeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PeliculaSerie");
-
-                    b.Navigation("Personaje");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -387,19 +404,24 @@ namespace ApiDisneyPruebaCore5.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PeliculaSeriePersonaje", b =>
+                {
+                    b.HasOne("ApiDisneyPruebaCore5.Models.PeliculaSerie", null)
+                        .WithMany()
+                        .HasForeignKey("PeliculasSeriesPeliculaSerieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApiDisneyPruebaCore5.Models.Personaje", null)
+                        .WithMany()
+                        .HasForeignKey("PersonajesPersonajeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ApiDisneyPruebaCore5.Models.Genero", b =>
                 {
                     b.Navigation("PeliculasSeries");
-                });
-
-            modelBuilder.Entity("ApiDisneyPruebaCore5.Models.PeliculaSerie", b =>
-                {
-                    b.Navigation("PeliculasSeriesPersonajes");
-                });
-
-            modelBuilder.Entity("ApiDisneyPruebaCore5.Models.Personaje", b =>
-                {
-                    b.Navigation("PeliculasSeriesPersonajes");
                 });
 #pragma warning restore 612, 618
         }

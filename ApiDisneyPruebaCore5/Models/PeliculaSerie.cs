@@ -12,7 +12,8 @@ namespace ApiDisneyPruebaCore5.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PeliculaSerieId { get; set; }
-
+        [Required]
+        [StringLength(maximumLength: 250)]
         public string Titulo { get; set; }
 
         [Column(TypeName = "image")]
@@ -27,7 +28,7 @@ namespace ApiDisneyPruebaCore5.Models
         public Genero FK_Genero { get; set; }
 
         //[JsonIgnore]
-        public List<Personaje> Personajes { get; set; }
+        public List<PeliculaSeriePersonaje> PeliculasSeriesPersonajes { get; set; }
 
     }
 }
