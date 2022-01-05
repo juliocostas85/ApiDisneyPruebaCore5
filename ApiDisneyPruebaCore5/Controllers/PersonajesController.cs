@@ -147,8 +147,11 @@ namespace ApiDisneyPruebaCore5.Controllers
 
                 _context.Personaje.Add(personajeCreacion);
                 await _context.SaveChangesAsync();
-                // return new CreatedAtRouteResult("personajeCreado", new { idpersonaje = personaje.PersonajeId }, personaje);
-                return Ok();
+
+                var personajeDTO = mapper.Map<PersonajeDTO>(personajeCreacion);
+
+                return new CreatedAtRouteResult("personajeCreado", new { idpersonaje = personajeCreacion.PersonajeId }, personajeDTO);
+               
             }
             else
             {

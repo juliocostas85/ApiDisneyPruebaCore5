@@ -151,8 +151,10 @@ namespace ApiDisneyPruebaCore5.Controllers
                 _context.PeliculasSeries.Add(pelicula);
                 await _context.SaveChangesAsync();
 
-                //return new CreatedAtRouteResult("peliculaCreada", new { idpeliculaserie = peliculaSerie.PeliculaSerieId }, peliculaSerie);
-                return Ok();
+                var peliculacreada = mapper.Map<PeliculasSeriesDTO>(pelicula);
+
+                return new CreatedAtRouteResult("peliculaCreada", new { idpeliculaserie = pelicula.PeliculaSerieId }, peliculacreada);
+             
             }
             else
             {

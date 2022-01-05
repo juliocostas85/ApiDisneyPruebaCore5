@@ -21,7 +21,7 @@ namespace ApiDisneyPruebaCore5.Tools
 
             CreateMap<PersonajeCreacionDTO, Personaje>();//POST
 
-            CreateMap<PeliculaSerie, PeliculasSeriesDTOconPersonajes>();
+            CreateMap<PeliculaSerie, PeliculasSeriesDTO>();
             CreateMap<PeliculaSerie, PeliculasSeriesDTOconPersonajes>()
                 .ForMember(pp => pp.Personajes, opciones => opciones.MapFrom(MapPeliculasPersonajes));//GET
 
