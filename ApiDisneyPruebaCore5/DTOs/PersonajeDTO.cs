@@ -8,7 +8,7 @@ namespace ApiDisneyPruebaCore5.DTOs
     {
         public int PersonajeId { get; set; }
 
-        [Required]
+       
 
         public string Nombre { get; set; }
 
@@ -21,11 +21,10 @@ namespace ApiDisneyPruebaCore5.DTOs
 
 
         public int? Edad { get; set; }
-
+      
 
         public string Historia { get; set; }
+      
 
-
-        public List<PeliculaSeriePersonaje> PeliculasSeriesPersonajes { get; set; }
     }
 }

@@ -12,18 +12,18 @@ namespace ApiDisneyPruebaCore5.Tools
         {
 
 
-           
+            CreateMap<Personaje, PersonajeDTO>();
 
-            CreateMap<Personaje, PersonajeDTO>();//GET
+            CreateMap<Personaje, PersonajesDTOConPeliculas>()
+                .ForMember(x=>x.PeliculasSeries, opciones=>opciones.MapFrom(MapPersonajesPeliculas));//GET
 
 
 
             CreateMap<PersonajeCreacionDTO, Personaje>();//POST
 
-            CreateMap<PeliculaSerie, PeliculasSeriesDTO>();
-
-            //CreateMap<PeliculaSerie, PeliculasSeriesDTOconPersonajes>()
-            //    .ForMember(pp=>pp.Personajes, opciones=>opciones.MapFrom(MapPeliculasPersonajes));//GET
+            CreateMap<PeliculaSerie, PeliculasSeriesDTOconPersonajes>();
+            CreateMap<PeliculaSerie, PeliculasSeriesDTOconPersonajes>()
+                .ForMember(pp => pp.Personajes, opciones => opciones.MapFrom(MapPeliculasPersonajes));//GET
 
 
 
@@ -34,10 +34,55 @@ namespace ApiDisneyPruebaCore5.Tools
          
         }
 
-        private object MapPeliculasPersonajes(PeliculaSerie arg)
+        private List<PersonajeDTO> MapPeliculasPersonajes(PeliculaSerie pelicula, PeliculasSeriesDTOconPersonajes peliculaspersonajes)
         {
-            throw new NotImplementedException();
+            var resultado = new List<PersonajeDTO>();
+
+            if (pelicula.PeliculasSeriesPersonajes == null) { return resultado; }
+
+            foreach (var personaje in pelicula.PeliculasSeriesPersonajes)
+            {
+                resultado.Add(new PersonajeDTO()
+                {
+                    PersonajeId = personaje.PersonajeId,
+                    Edad = personaje.Personaje.Edad,
+                    Historia = personaje.Personaje.Historia,
+                    Imagen = personaje.Personaje.Imagen,
+                    Nombre = personaje.Personaje.Nombre,
+                    Peso = personaje.Personaje.Peso
+
+                    
+                });
+            }
+
+            return resultado;
         }
+
+
+
+        private List<PeliculasSeriesDTO> MapPersonajesPeliculas(Personaje personaje, PersonajesDTOConPeliculas personajespeliculas)
+        {
+            var resultado = new List<PeliculasSeriesDTO>();
+
+            if(personaje.PeliculasSeriesPersonajes == null) { return resultado; }
+
+            foreach (var pelicula in personaje.PeliculasSeriesPersonajes)
+            {
+                resultado.Add(new PeliculasSeriesDTO()
+                {
+                 FechaCreacion = pelicula.PeliculaSerie.FechaCreacion,
+                 GeneroId = pelicula.PeliculaSerie.GeneroId,
+                 Imagen = pelicula.PeliculaSerie.Imagen,
+                 PeliculaSerieId = pelicula.PeliculaSerieId,
+                 Titulo = pelicula.PeliculaSerie.Titulo
+
+                });
+            }
+
+            return resultado;
+        }
+
+
     }
 
     

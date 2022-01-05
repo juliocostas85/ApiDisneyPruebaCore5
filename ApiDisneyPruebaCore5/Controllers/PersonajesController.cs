@@ -16,7 +16,7 @@ namespace ApiDisneyPruebaCore5.Controllers
     [Produces("application/json")]
     [Route("characters")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+   // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PersonajesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -84,9 +84,9 @@ namespace ApiDisneyPruebaCore5.Controllers
        
         
         [HttpGet("{idpersonaje:int}", Name = "personajeCreado")]
-        public async Task<ActionResult<PersonajeDTO>> Detalle(int idpersonaje)
+        public async Task<ActionResult<PersonajesDTOConPeliculas>> Detalle(int idpersonaje)
         {
-            Personaje personaje = await _context.Personaje.Include(x => x.PeliculasSeriesPersonajes).ThenInclude(p=>p.PeliculaSerie).FirstOrDefaultAsync(x => x.PersonajeId == idpersonaje);
+            var personaje = await _context.Personaje.Include(x => x.PeliculasSeriesPersonajes).ThenInclude(p=>p.PeliculaSerie).FirstOrDefaultAsync(x => x.PersonajeId == idpersonaje);
 
             if (personaje == null)
             {
@@ -94,7 +94,7 @@ namespace ApiDisneyPruebaCore5.Controllers
             }
 
 
-            return mapper.Map<PersonajeDTO>(personaje);
+            return mapper.Map<PersonajesDTOConPeliculas>(personaje);
         }
 
 

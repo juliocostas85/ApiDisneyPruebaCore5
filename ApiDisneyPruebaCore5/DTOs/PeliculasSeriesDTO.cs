@@ -19,7 +19,7 @@ namespace ApiDisneyPruebaCore5.DTOs
       
         public int GeneroId { get; set; }
 
-        public List<PeliculaSeriePersonaje> PeliculasSeriesPersonajes { get; set; }
+     //   public List<PeliculaSeriePersonaje> PeliculasSeriesPersonajes { get; set; }
 
     }
 }
