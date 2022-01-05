@@ -16,7 +16,7 @@ namespace ApiDisneyPruebaCore5.Controllers
     [Produces("application/json")]
     [Route("characters")]
     [ApiController]
-   // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PersonajesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
