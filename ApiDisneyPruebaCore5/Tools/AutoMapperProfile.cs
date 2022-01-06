@@ -29,9 +29,11 @@ namespace ApiDisneyPruebaCore5.Tools
 
 
             CreateMap<PeliculasSeriesCreacionDTO, PeliculaSerie>();//post
-         
+            CreateMap<PeliculasSeriesModificacionDTO, PeliculaSerie>();//put
+            CreateMap<PersonajeModificacionDTO, Personaje>();//put
 
-         
+
+
         }
 
         private List<PersonajeDTO> MapPeliculasPersonajes(PeliculaSerie pelicula, PeliculasSeriesDTOconPersonajes peliculaspersonajes)

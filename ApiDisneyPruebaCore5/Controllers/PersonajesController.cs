@@ -101,37 +101,18 @@ namespace ApiDisneyPruebaCore5.Controllers
         // PUT: api/Personajes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> PutPersonaje(int id, Personaje personaje)
+        public async Task<IActionResult> PutPersonaje(int id, PersonajeModificacionDTO personajeDTO)
         {
-            if (id != personaje.PersonajeId)
-            {
-                return BadRequest();
-            }
+            
 
-
-            var existe = await _context.Personaje.AnyAsync(x => x.PersonajeId == id);
-            if (!existe)
+            var personaje = await _context.Personaje.FirstOrDefaultAsync(x => x.PersonajeId == id);
+            if (personaje ==  null)
             {
                 return NotFound();
             }
 
-            _context.Entry(personaje).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PersonajeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            personaje = mapper.Map(personajeDTO, personaje);
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }

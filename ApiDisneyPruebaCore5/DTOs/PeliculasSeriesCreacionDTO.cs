@@ -10,7 +10,7 @@ namespace ApiDisneyPruebaCore5.DTOs
     public class PeliculasSeriesCreacionDTO
     {
         
-
+        [Required]
         [StringLength(maximumLength: 250)]
         public string Titulo { get; set; }
 

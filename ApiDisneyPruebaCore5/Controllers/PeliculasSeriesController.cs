@@ -99,36 +99,21 @@ namespace ApiDisneyPruebaCore5.Controllers
 
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> PutPeliculaSerie(int id, PeliculaSerie peliculaSerie)
+        public async Task<IActionResult> PutPeliculaSerie(int id, PeliculasSeriesModificacionDTO peliculaSerie)
         {
-            if (id != peliculaSerie.PeliculaSerieId)
-            {
-                return BadRequest();
-            }
+           
 
-            var existe = await _context.PeliculasSeries.AnyAsync(x => x.PeliculaSerieId == id);
-            if (!existe)
+            var ps = await _context.PeliculasSeries.FirstOrDefaultAsync(x => x.PeliculaSerieId == id);
+            if (ps == null)
             {
                 return NotFound();
             }
 
-            _context.Entry(peliculaSerie).State = EntityState.Modified;
+            ps = mapper.Map(peliculaSerie, ps);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PeliculaSerieExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            await _context.SaveChangesAsync();
+
 
             return NoContent();
         }
