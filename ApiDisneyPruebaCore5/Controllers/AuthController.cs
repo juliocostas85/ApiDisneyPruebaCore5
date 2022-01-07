@@ -37,9 +37,9 @@ namespace ApiDisneyPruebaCore5.Controllers
 
         [Route("Register")]
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] UserInfo model)
+        public async Task<ActionResult<RespuestaAutenticacion>> CreateUser([FromBody] UserInfo model)
         {
-            string Errores = "";
+          
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
@@ -63,12 +63,8 @@ namespace ApiDisneyPruebaCore5.Controllers
                 }
                 else
                 {
-                    foreach(IdentityError error in result.Errors)
-                    {
-                        Errores += error.Description;
-                        Errores += " || ";
-                    }
-                    return BadRequest("Username or password invalid: "+Errores);
+                    
+                    return BadRequest(result.Errors);
                 }
             }
             else
@@ -81,7 +77,7 @@ namespace ApiDisneyPruebaCore5.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] UserInfo userInfo)
+        public async Task<ActionResult<RespuestaAutenticacion>> Login([FromBody] UserInfo userInfo)
         {
             if (ModelState.IsValid)
             {
@@ -95,8 +91,8 @@ namespace ApiDisneyPruebaCore5.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return BadRequest(ModelState);
+                   
+                    return BadRequest("Login Incorrecto.");
                 }
             }
             else
@@ -105,7 +101,7 @@ namespace ApiDisneyPruebaCore5.Controllers
             }
         }
 
-        private IActionResult BuildToken(UserInfo userInfo)
+        private RespuestaAutenticacion BuildToken(UserInfo userInfo)
         {
             var claims = new[]
             {
@@ -126,11 +122,11 @@ namespace ApiDisneyPruebaCore5.Controllers
                expires: expiration,
                signingCredentials: creds);
 
-            return Ok(new
+            return new RespuestaAutenticacion
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = expiration
-            });
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                FechaExpiracion = expiration
+            };
 
         }
 
