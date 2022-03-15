@@ -4,14 +4,16 @@ using ApiDisneyPruebaCore5.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ApiDisneyPruebaCore5.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220308134906_seg")]
+    partial class seg
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,7 +150,7 @@ namespace ApiDisneyPruebaCore5.Migrations
 
             modelBuilder.Entity("ApiDisneyPruebaCore5.Models.Personaje", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("PersonajeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -170,7 +172,7 @@ namespace ApiDisneyPruebaCore5.Migrations
                     b.Property<decimal?>("Peso")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                    b.HasKey("PersonajeId");
 
                     b.ToTable("Personaje");
                 });

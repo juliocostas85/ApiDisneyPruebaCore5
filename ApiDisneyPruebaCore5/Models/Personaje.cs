@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace ApiDisneyPruebaCore5.Models
 {
-    public class Personaje
+    public class Personaje:IId
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int PersonajeId { get; set; }
+        public int Id { get; set; }
 
         [Required]
         [StringLength(maximumLength: 250)]

@@ -10,84 +10,97 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using AutoMapper;
 using ApiDisneyPruebaCore5.DTOs;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using ApiDisneyPruebaCore5.Tools;
+using ApiDisneyPruebaCore5.Helpers;
+using ApiDisneyPruebaCore5.Filters;
+using ApiDisneyPruebaCore5.Services;
+using ApiDisneyPruebaCore5.Wrappers;
 
 namespace ApiDisneyPruebaCore5.Controllers
 {
     [Produces("application/json")]
     [Route("characters")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class PersonajesController : ControllerBase
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public class PersonajesController : CustomBaseController
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper mapper;
-
-        public PersonajesController(ApplicationDbContext context, IMapper mapper)
+        private readonly IUriService uriService;
+        
+        public PersonajesController(ApplicationDbContext context, IMapper mapper, IUriService uriService) : base(context, mapper, uriService)
         {
             this._context = context;
             this.mapper = mapper;
+            this.uriService = uriService;
         }
-
         // GET: api/Personajes
-      
+
 
 
         [HttpGet]
-        public async Task<ActionResult<List<PersonajesGet>>> BuscarPersonaje([FromQuery]Filtros filtros)
+        public async Task<ActionResult<PagedResponse<List<PersonajesGet>>>> BuscarPersonaje([FromQuery] Filtros filtros)
         {
+            var personajesQueryable =_context.Personaje.AsQueryable();
 
             List<Personaje> lst = new List<Personaje>();
-            bool passedFilters = false;
-
+         
             if (filtros.name != "")
             {
-                passedFilters = true;
-                lst.AddRange(await _context.Personaje.Where(x => x.Nombre.Contains(filtros.name)).ToListAsync());
+       
+                personajesQueryable.Where(x => x.Nombre.Contains(filtros.name));
+               
 
             }
-            if(filtros.weigth >= 0)
+            if (filtros.weigth >= 0)
             {
-                passedFilters = true;
-                lst.AddRange(await _context.Personaje.Where(x => x.Peso == filtros.weigth).ToListAsync());
+           
+                personajesQueryable.Where(x => x.Peso == filtros.weigth);
+              
             }
             if (filtros.age > -1)
             {
-                passedFilters = true;
-                lst.AddRange(await _context.Personaje.Where(x => x.Edad == filtros.age).ToListAsync());
+   
+                personajesQueryable.Where(x => x.Edad == filtros.age);
+              
             }
             if (filtros.movies >= 0)
             {
-                passedFilters = true;
-                lst.AddRange(await _context.Personaje.FromSqlRaw("select p.* from Personaje p where p.PersonajeId IN (select psp.PersonajesPersonajeId from PeliculaSeriePersonaje psp where psp.PeliculasSeriesPeliculaSerieId = '"+filtros.movies+"')").ToListAsync());
-
-            }
-
-            if (!passedFilters)
-            {
-                lst = await _context.Personaje.ToListAsync();
-            }
-
-
-            var lstResult =  (from d in lst
-                             select new PersonajesGet
-                             {
-                                 Imagen = d.Imagen,
-                                 Nombre = d.Nombre
-                             }).ToList();
-
-
-            return Ok(lstResult);
             
+                lst = personajesQueryable.ToList();
+                lst.AddRange(await _context.Personaje.FromSqlRaw("select p.* from Personaje p where p.PersonajeId IN (select psp.PersonajesPersonajeId from PeliculaSeriePersonaje psp where psp.PeliculasSeriesPeliculaSerieId = '"+filtros.movies+"')").ToListAsync());
+                personajesQueryable = lst.AsQueryable();
+            }
+
+            //sobre el total
+            var totalRecords = await personajesQueryable.CountAsync();
+
+            await HttpContext.InsertarParametrosPaginacion(personajesQueryable,
+                filtros.CantidadRegistrosPorPagina);
+
+            var personajes = await personajesQueryable.Paginar(filtros.Paginacion).ToListAsync();
+            var personajesGet = mapper.Map<List<PersonajesGet>>(personajes);
+
+            //se prepara la respuesta
+            var route = Request.Path.Value;
+            var validFilter = new PaginationFilter(filtros.Pagina, filtros.CantidadRegistrosPorPagina);
+            var pagedReponse = PaginationHelper.CreatePagedReponse<PersonajesGet>(personajesGet, validFilter, totalRecords, uriService, route);
+           
+            return pagedReponse;
+          
+
         }
 
         // GET: api/Personajes/5
-       
-        
-        [HttpGet("{idpersonaje:int}", Name = "personajeCreado")]
-        public async Task<ActionResult<PersonajesDTOConPeliculas>> Detalle(int idpersonaje)
-        {
-            var personaje = await _context.Personaje.Include(x => x.PeliculasSeriesPersonajes).ThenInclude(p=>p.PeliculaSerie).FirstOrDefaultAsync(x => x.PersonajeId == idpersonaje);
 
+
+        [HttpGet("{Id:int}", Name = "personajeCreado")]
+        public async Task<ActionResult<PersonajesDTOConPeliculas>> Detalle(int Id)
+        {
+            var personaje = await _context.Personaje.Include(x => x.PeliculasSeriesPersonajes).ThenInclude(p => p.PeliculaSerie).FirstOrDefaultAsync(x => x.Id == Id);
+            
             if (personaje == null)
             {
                 return NotFound();
@@ -103,18 +116,7 @@ namespace ApiDisneyPruebaCore5.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> PutPersonaje(int id, PersonajeModificacionDTO personajeDTO)
         {
-            
-
-            var personaje = await _context.Personaje.FirstOrDefaultAsync(x => x.PersonajeId == id);
-            if (personaje ==  null)
-            {
-                return NotFound();
-            }
-
-            personaje = mapper.Map(personajeDTO, personaje);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return await Put<PersonajeModificacionDTO, Personaje>(id, personajeDTO);
         }
 
         // POST: api/Personajes
@@ -124,15 +126,9 @@ namespace ApiDisneyPruebaCore5.Controllers
         {
             if (ModelState.IsValid)
             {
-                var personajeCreacion = mapper.Map<Personaje>(personaje);
+                return await
+                Post<PersonajeCreacionDTO, Personaje, PersonajeDTO>(personaje, "personajeCreado");
 
-                _context.Personaje.Add(personajeCreacion);
-                await _context.SaveChangesAsync();
-
-                var personajeDTO = mapper.Map<PersonajeDTO>(personajeCreacion);
-
-                return new CreatedAtRouteResult("personajeCreado", new { idpersonaje = personajeCreacion.PersonajeId }, personajeDTO);
-               
             }
             else
             {
@@ -140,7 +136,38 @@ namespace ApiDisneyPruebaCore5.Controllers
             }
 
 
-           
+
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> PatchPersonaje(int id, [FromBody]JsonPatchDocument<PersonajePatchDTO> jsonPatchDocument)
+        {
+            if(jsonPatchDocument == null)
+            {
+                return BadRequest();
+            }
+
+            var personajeDB = await _context.Personaje.FirstOrDefaultAsync(X => X.Id == id);
+            if(personajeDB == null)
+            {
+                return NotFound();
+            }
+
+            var personajeDTO = mapper.Map<PersonajePatchDTO>(personajeDB);
+            jsonPatchDocument.ApplyTo(personajeDTO, ModelState);
+
+            var esValido = TryValidateModel(personajeDTO);
+            if (!esValido)
+            {
+                return BadRequest(ModelState);
+            }
+
+
+            mapper.Map(personajeDTO, personajeDB);
+            await _context.SaveChangesAsync();
+            return NoContent();
+
+
         }
 
         // DELETE: api/Personajes/5
@@ -161,7 +188,7 @@ namespace ApiDisneyPruebaCore5.Controllers
 
         private bool PersonajeExists(int id)
         {
-            return _context.Personaje.Any(e => e.PersonajeId == id);
+            return _context.Personaje.Any(e => e.Id == id);
         }
     }
 }

@@ -30,9 +30,11 @@ namespace ApiDisneyPruebaCore5.Tools
 
             CreateMap<PeliculasSeriesCreacionDTO, PeliculaSerie>();//post
             CreateMap<PeliculasSeriesModificacionDTO, PeliculaSerie>();//put
-            CreateMap<PersonajeModificacionDTO, Personaje>();//put
+            CreateMap<PersonajeModificacionDTO, Personaje>().ReverseMap();//put
 
 
+            CreateMap<PersonajePatchDTO, Personaje>().ReverseMap();
+            CreateMap<Personaje, PersonajesGet>();
 
         }
 
@@ -46,7 +48,7 @@ namespace ApiDisneyPruebaCore5.Tools
             {
                 resultado.Add(new PersonajeDTO()
                 {
-                    PersonajeId = personaje.PersonajeId,
+                    Id = personaje.PersonajeId,
                     Edad = personaje.Personaje.Edad,
                     Historia = personaje.Personaje.Historia,
                     Imagen = personaje.Personaje.Imagen,

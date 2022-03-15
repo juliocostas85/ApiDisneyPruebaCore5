@@ -20,6 +20,9 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using ApiDisneyPruebaCore5.Tools;
+using ApiDisneyPruebaCore5.Services;
+using Microsoft.AspNetCore.Http;
+using ApiDisneyPruebaCore5.Servicios;
 
 namespace ApiDisneyPruebaCore5
 {
@@ -35,8 +38,17 @@ namespace ApiDisneyPruebaCore5
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IAlmacenadorArchivos, AlmacenadorArchivosAzure>();
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IUriService>(o =>
+            {
+                var accessor = o.GetRequiredService<IHttpContextAccessor>();
+                var request = accessor.HttpContext.Request;
+                var uri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+                return new UriService(uri);
+            });
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ApiDisneyPruebaCore5", Version = "v1" });

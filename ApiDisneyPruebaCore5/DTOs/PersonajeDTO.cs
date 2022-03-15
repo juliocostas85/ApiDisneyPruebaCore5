@@ -4,19 +4,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ApiDisneyPruebaCore5.DTOs
 {
-    public class PersonajeDTO
+    public class PersonajeDTO:PersonajePatchDTO
     {
-        public int PersonajeId { get; set; }
+        public int Id { get; set; }
 
        
 
-        public string Nombre { get; set; }
+       
 
         public byte[] Imagen { get; set; }
 
 
 
-        public decimal? Peso { get; set; }
+       
 
 
 
